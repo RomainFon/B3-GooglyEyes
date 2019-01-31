@@ -4,7 +4,6 @@ import { Engine, Render, Runner, Composite, Composites, Common, Constraint, Mous
 import Physic from '../classes/physic'
 import Eye from '../classes/eye'
 import Camera from '../classes/camera'
-import clm from 'tracking'
 
 class GooglyEyes extends Component {
     constructor(){
