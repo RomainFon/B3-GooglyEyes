@@ -80,14 +80,17 @@ class GooglyEyes extends Component {
         this.eyes.push(eye)
     }
 
-    render() {
-        return (
-            <canvas onClick={(e) => this.onClick} onclassName="googlyEyes" ref={"canvas"}>GooglyEyes</canvas>
-        ) ;
-    }
-
     picture(){
         this.camera.takeSnapshot()
+    }
+
+    render() {
+        return (
+            <div>
+                <canvas onClick={(e) => this.onClick} onclassName="googlyEyes" ref={"canvas"}>GooglyEyes</canvas>
+                <button className={"button_picture"} onClick={() => this.picture()}>PICTURE</button>
+            </div>
+        ) ;
     }
 }
 

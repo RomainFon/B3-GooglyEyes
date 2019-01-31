@@ -2,6 +2,10 @@ import React, { Component } from 'react';
 import './App.css';
 import GooglyEyes from './components/googlyEyes'
 import Menu from './components/menu'
+import Fun from './pages/fun'
+import About from './pages/about'
+
+import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 
 class App extends Component {
     constructor(){
@@ -16,17 +20,21 @@ class App extends Component {
         })
     }
 
-    takePicture(){
-        this.refs.googlyEye.picture()
-    }
+
     render() {
         return (
-            <div className="App">
-                <Menu display={ this.state.menu }/>
-                <GooglyEyes ref={"googlyEye"}></GooglyEyes>
-                <div className={this.state.menu ? "button_menu active" : "button_menu"} onClick={() => this.toggleMenu()}><div className="hamburger"></div></div>
-                <button className={"button_picture"} onClick={() => this.takePicture()}>PICTURE</button>
-            </div>
+            <Router>
+                <div className="App">
+                    <Menu display={ this.state.menu }/>
+
+                    <Route path="/fun" component={Fun}/>
+                    <Route path="/about" component={About}/>
+                    <Route path="/googlyeyes" component={GooglyEyes} ref={'googlyEye'}/>
+
+                    <div className={this.state.menu ? "button_menu active" : "button_menu"} onClick={() => this.toggleMenu()}><div className="hamburger"></div></div>
+
+                </div>
+            </Router>
         );
     }
 }
