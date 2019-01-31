@@ -1,5 +1,6 @@
 body{
   margin: 0;
+  overflow: hidden;
 }
 
 .googlyEyes{
@@ -11,7 +12,7 @@ body{
   background-color: lightblue;
 }
 
-button{
+.button_picture{
   position: absolute;
   top: 80%;
   left: 50%;
@@ -20,7 +21,93 @@ button{
   border-radius: 80px;
   background-color: tomato;
   border: 3px solid white;
-  z-index: 999;
+  z-index: 1;
   color: white;
   transform: translateX(-50%);
+}
+
+
+.menu{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: white;
+  z-index: 555;
+  transform: translateX(100%);
+  transition: transform 500ms;
+}
+
+.menu.open{
+  transform: translateX(0);
+}
+
+.logoMDS{
+  width: 40%;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 20px;
+}
+/*MENU HAMBURGER */
+
+
+.button_menu{
+  z-index: 999;
+  position: absolute;
+  top: 40px;
+  right: 0;
+}
+
+.hamburger
+{
+  width: 50px;
+  height: 6px;
+  background-color: white;
+  transform: translate(-50%,-50%);
+  transition: 0.5s;
+  box-shadow: 2px 2px 4px black;
+}
+
+.hamburger:before,
+.hamburger:after
+{
+  content: '';
+  position: absolute;
+  width: 50px;
+  height: 6px;
+  background-color: white;
+  transition: 0.5s;
+  box-shadow: 2px 2px 4px black;
+}
+.hamburger:before
+{
+  top:-16px;
+}
+.hamburger:after
+{
+  top: 16px;
+}
+
+.button_menu.active .hamburger
+{
+  background-color: rgba(0,0,0,0);
+  box-shadow: none;
+}
+
+.button_menu.active .hamburger:before
+{
+  top:0;
+  box-shadow: none;
+  background-color: tomato;
+  transform: rotate(45deg);
+}
+
+.button_menu.active .hamburger:after
+{
+  top: 0;
+  box-shadow: none;
+  background-color: tomato;
+  transform: rotate(135deg);
 }
