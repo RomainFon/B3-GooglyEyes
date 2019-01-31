@@ -3,10 +3,15 @@ import './App.css';
 import GooglyEyes from './components/googlyEyes'
 
 class App extends Component {
+
+    takePicture(){
+        this.refs.googlyEye.picture()
+    }
     render() {
         return (
             <div className="App">
-                <GooglyEyes></GooglyEyes>
+                <GooglyEyes ref={"googlyEye"}></GooglyEyes>
+                <button onClick={() => this.takePicture()}>PICTURE</button>
             </div>
         );
     }

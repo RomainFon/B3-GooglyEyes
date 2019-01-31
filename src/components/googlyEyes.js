@@ -1,150 +1,94 @@
 import React, {Component} from 'react';
 import './../App.css'
 import { Engine, Render, Runner, Composite, Composites, Common, Constraint, MouseConstraint, Mouse, World, Bodies } from 'matter-js'
+import Physic from '../classes/physic'
+import Eye from '../classes/eye'
+import Camera from '../classes/camera'
+import clm from 'tracking'
 
 class GooglyEyes extends Component {
     constructor(){
         super()
-        this.engine = Engine.create()
-        this.world = this.engine.world
+        this.camera = new Camera()
+        this.eyes = []
     }
 
     componentDidMount(){
+        this.physic = new Physic(this.refs.canvas)
+        this.physic.addMouse()
+
         this.center = {x: window.innerWidth/2, y:window.innerHeight/2}
+
         this.ctx = this.refs.canvas.getContext('2d')
         this.refs.canvas.width = window.innerWidth
         this.refs.canvas.height = window.innerHeight
 
-        this.render = Render.create({
-            canvas: this.refs.canvas,
-            engine: this.engine,
-            options: {
-                width: window.innerWidth,
-                height: window.innerHeight,
-                showAngleIndicator: true
-            }
-        });
-
-        this.startEngine()
-        this.createEyes()
-        this.addMouse()
-        this.startRender()
+        this.draw()
 
         window.addEventListener('resize', this.onResize.bind(this))
-        window.addEventListener('deviceorientation', this.updateGravity.bind(this))
         window.addEventListener('devicemotion', this.updateMotion.bind(this))
+
+        this.refs.canvas.addEventListener('click', this.onClick.bind(this))
+        this.refs.canvas.addEventListener('touchstart', this.onClick.bind(this))
 
     }
 
     updateMotion(event){
         var x = event.accelerationIncludingGravity.x
         var y = event.accelerationIncludingGravity.y
-        var z = event.accelerationIncludingGravity.z
 
-        var gravity = this.engine.world.gravity
-        gravity.x = -x
-        gravity.y = y
+        this.physic.updateGravity(x,y)
     }
 
-    updateGravity(event){
-        var orientation = typeof window.orientation !== 'undefined' ? window.orientation : 0,
-            gravity = this.engine.world.gravity;
-
-        if (orientation === 0) {
-            gravity.x = Common.clamp(event.gamma, -90, 90) / 90;
-            gravity.y = Common.clamp(event.beta, -90, 90) / 90;
-        } else if (orientation === 180) {
-            gravity.x = Common.clamp(event.gamma, -90, 90) / 90;
-            gravity.y = Common.clamp(-event.beta, -90, 90) / 90;
-        } else if (orientation === 90) {
-            gravity.x = Common.clamp(event.beta, -90, 90) / 90;
-            gravity.y = Common.clamp(-event.gamma, -90, 90) / 90;
-        } else if (orientation === -90) {
-            gravity.x = Common.clamp(-event.beta, -90, 90) / 90;
-            gravity.y = Common.clamp(event.gamma, -90, 90) / 90;
-        }
-    }
 
     onResize(){
+        this.physic.resize()
         this.refs.canvas.width = window.innerWidth
         this.refs.canvas.height = window.innerHeight
     }
 
-    startEngine(){
-        /*Render.run(this.render)
-
-        this.runner = Runner.create();
-        Runner.run(this.runner, this.engine);*/
-        this.draw()
-    }
-
     draw(){
-        var bodies = Composite.allBodies(this.engine.world)
-        Engine.update(this.engine, 16)
+        this.physic.update()
+        this.ctx.clearRect(0,0, window.innerWidth, window.innerHeight)
 
-        if(bodies.length){
-            this.ctx.clearRect(0,0, window.innerWidth, window.innerHeight)
+        let videoW = this.camera.video.videoWidth
+        let videoH = this.camera.video.videoHeight
+        let windowWidth = window.innerWidth
+        let windowHeight = window.innerHeight
 
-            this.ctx.beginPath()
-            this.ctx.fillStyle =  '#ffffff'
-            this.ctx.arc(this.center.x, this.center.y, 80, 0, Math.PI * 2)
-            this.ctx.fill()
-            this.ctx.closePath()
+        let ratio = Math.max(windowWidth / videoW, windowHeight / videoH)
 
-            this.ctx.beginPath()
-            this.ctx.fillStyle =  '#000000'
-            this.ctx.arc(bodies[0].position.x, bodies[0].position.y, 40, 0, Math.PI * 2)
-            this.ctx.fill()
-            this.ctx.closePath()
-        }
+        let newVideoW = videoW * ratio
+        let newVideoH = videoH * ratio
+        let newX = (windowWidth - newVideoW)/2
+        let newY = (windowHeight - newVideoH)/2
 
+        this.ctx.drawImage(this.camera.video, 0, 0, videoW, videoH, newX, newY, newVideoW, newVideoH)
 
         requestAnimationFrame(() => this.draw())
+
+        for(let i = 0; i < this.eyes.length; i++){
+            this.eyes[i].render(this.ctx)
+        }
     }
 
-    createEyes(){
-        var body = Bodies.circle(this.center.x, this.center.y, 30);
-
-        var constraint = Constraint.create({
-            render: { visible: false},
-            pointA: { x: this.center.x, y: this.center.y },
-            bodyB: body,
-            pointB: { x: -10, y: -10 },
-            stiffness: 0.1,
-            damping: 0.03
-        });
-
-        World.add(this.world, [body, constraint]);
-    }
-
-    startRender(){
-        Render.lookAt(this.render, {
-            min: { x: 0, y: 0 },
-            max: { x: 800, y: 600 }
-        });
-    }
-
-    addMouse(){
-        var mouse = Mouse.create(this.render.canvas),
-            mouseConstraint = MouseConstraint.create(this.engine, {
-                mouse: mouse,
-                constraint: {
-                    // allow bodies on mouse to rotate
-                    angularStiffness: 0,
-                    render: {
-                        visible: false
-                    }
-                }
-            });
-
-        World.add(this.world, mouseConstraint);
-        this.render.mouse = mouse;
+    onClick(e){
+        if(e.targetTouches){
+            e = e.targetTouches[0]
+        }
+        let eye = new Eye(this.physic.world)
+        eye.updatePosition(e.clientX, e.clientY)
+        this.eyes.push(eye)
     }
 
     render() {
         return (
-            <canvas className="googlyEyes" ref={"canvas"}>GooglyEyes</canvas>
+            <canvas onClick={(e) => this.onClick} onclassName="googlyEyes" ref={"canvas"}>GooglyEyes</canvas>
         ) ;
+    }
+
+    picture(){
+        this.camera.takeSnapshot()
     }
 }
 
